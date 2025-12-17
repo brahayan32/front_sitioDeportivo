@@ -19,7 +19,7 @@ export class ReservasComponent implements OnInit {
   canchas: any[] = [];
   precioPorHora?: number;
   tarifaId?: number;
-  
+
   reservas: ReservaResponse[] = [];
   loading = false;
   error: string | null = null;
@@ -54,6 +54,7 @@ export class ReservasComponent implements OnInit {
       return;
     }
 
+
     const inicio = new Date(this.form.inicio);
     const fin = new Date(this.form.fin);
 
@@ -70,6 +71,10 @@ export class ReservasComponent implements OnInit {
     this.form.totalPagar = horas * this.precioPorHora;
 
   }
+  onHorarioChange(): void {
+    this.calcularTotal();
+  }
+
 
 
 
@@ -86,7 +91,7 @@ export class ReservasComponent implements OnInit {
     this.cargarCanchas();
     this.cargarReservas();
   }
-  
+
   cargarReservas(): void {
     this.loading = true;
     this.error = null;
@@ -150,6 +155,15 @@ export class ReservasComponent implements OnInit {
   abrirModalEditar(reserva: ReservaResponse): void {
     this.isEditMode = true;
     this.currentId = reserva.idReserva;
+    if (reserva.canchaId) {
+      this.tarifaService.getTarifaPorCancha(reserva.canchaId).subscribe({
+        next: (tarifa) => {
+          this.precioPorHora = tarifa.precioHora;
+          this.calcularTotal();
+        }
+      });
+    }
+
     this.form = {
       clienteId: reserva.clienteId,
       canchaId: reserva.canchaId,
@@ -256,8 +270,10 @@ export class ReservasComponent implements OnInit {
   }
 
   resetForm(): void {
+    const idCliente = this.authService.getIdCliente();
+
     this.form = {
-      clienteId: 0,
+      clienteId: idCliente ?? 0,
       canchaId: 0,
       tarifaId: undefined,
       inicio: '',
@@ -266,12 +282,12 @@ export class ReservasComponent implements OnInit {
       estado: 'PENDIENTE',
       totalPagar: 0,
       creadoPorAdminId: undefined
-
     };
+
+    this.precioPorHora = undefined;
     this.error = null;
-
-
   }
+
   private normalizarFechas(): ReservaRequest {
     return {
       ...this.form,
