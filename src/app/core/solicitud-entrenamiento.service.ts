@@ -62,4 +62,36 @@ export class SolicitudEntrenamientoService extends BaseService {
   eliminar(id: number): Observable<void> {
     return this.delete<void>('solicitudes', id);
   }
+
+  /**
+   * ✅ NUEVO: Obtener solicitudes por entrenador
+   * GET /solicitudes/entrenador/{idEntrenador}
+   */
+  listarPorEntrenador(idEntrenador: number): Observable<SolicitudEntrenamientoResponseDTO[]> {
+    return this.customQuery<SolicitudEntrenamientoResponseDTO[]>('solicitudes', `entrenador/${idEntrenador}`);
+  }
+
+  /**
+   * ✅ NUEVO: Obtener solicitudes disponibles (sin entrenador asignado)
+   * GET /solicitudes/disponibles
+   */
+  listarDisponibles(): Observable<SolicitudEntrenamientoResponseDTO[]> {
+    return this.customQuery<SolicitudEntrenamientoResponseDTO[]>('solicitudes', 'disponibles');
+  }
+
+  /**
+   * ✅ NUEVO: Aceptar una solicitud asignando entrenador
+   * PUT /solicitudes/{id}/aceptar/{idEntrenador}
+   */
+  aceptarSolicitud(id: number, idEntrenador: number): Observable<SolicitudEntrenamientoResponseDTO> {
+    return this.customAction<SolicitudEntrenamientoResponseDTO>('solicitudes', id, `aceptar/${idEntrenador}`);
+  }
+
+  /**
+   * ✅ NUEVO: Rechazar una solicitud
+   * PUT /solicitudes/{id}/rechazar
+   */
+  rechazarSolicitud(id: number): Observable<SolicitudEntrenamientoResponseDTO> {
+    return this.customAction<SolicitudEntrenamientoResponseDTO>('solicitudes', id, 'rechazar');
+  }
 }
