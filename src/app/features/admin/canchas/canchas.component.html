@@ -1,0 +1,110 @@
+<div class="page-header">
+  <div>
+    <h1>Gestión de Canchas</h1>
+    <p class="subtitle">Administración del centro deportivo</p>
+  </div>
+
+  <button class="btn btn-primary"
+          (click)="abrirModalNuevo()"
+          [disabled]="totalCanchas >= 4">
+    + Nueva Cancha
+  </button>
+</div>
+
+<div *ngIf="error" class="alert-error">{{ error }}</div>
+
+<div class="card" *ngIf="canchas.length">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Tipo</th>
+        <th>Estado</th>
+        <th>Descripción</th>
+        <th class="acciones">Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let c of canchas">
+        <td>#{{ c.idCancha }}</td>
+        <td>{{ c.nombre }}</td>
+        <td>
+          <span class="tag">{{ c.tipo }}</span>
+        </td>
+        <td>
+          <span class="badge" [ngClass]="getEstadoBadgeClass(c.estado)">
+            {{ c.estado }}
+          </span>
+        </td>
+        <td>{{ c.descripcion || '—' }}</td>
+        <td class="acciones">
+          <button class="btn btn-sm btn-outline"
+                  (click)="abrirModalEditar(c)">
+            Editar
+          </button>
+          <button class="btn btn-sm btn-danger"
+                  (click)="eliminar(c.idCancha)">
+            Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="showModal" class="modal-overlay">
+  <div class="modal">
+    <h2>{{ isEditMode ? 'Editar Cancha' : 'Nueva Cancha' }}</h2>
+
+    <form (ngSubmit)="guardar()">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input [(ngModel)]="form.nombre"
+               name="nombre"
+               required />
+      </div>
+
+      <div class="form-group">
+        <label>Tipo *</label>
+        <select [(ngModel)]="form.tipo" name="tipo">
+          <option *ngFor="let t of TIPOS"
+                  [value]="t"
+                  [disabled]="!isEditMode && cantidadPorTipo(t) >= 2">
+            {{ t }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Estado *</label>
+        <select [(ngModel)]="form.estado" name="estado">
+          <option *ngFor="let e of ESTADOS" [value]="e">
+            {{ e }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea [(ngModel)]="form.descripcion"
+                  name="descripcion"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary"
+                type="submit"
+                [disabled]="loading">
+          Guardar
+        </button>
+
+        <button class="btn btn-secondary"
+                type="button"
+                (click)="cerrarModal()">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

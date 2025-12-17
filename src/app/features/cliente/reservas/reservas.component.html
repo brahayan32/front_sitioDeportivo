@@ -1,0 +1,170 @@
+<div class="page-container">
+
+  <!-- Encabezado -->
+  <div class="page-header">
+    <div>
+      <h1>Gestión de Reservas</h1>
+      <p class="subtitle">Administración de reservas de canchas deportivas</p>
+    </div>
+
+    <button class="btn btn-primary" (click)="abrirModalNuevo()">
+      Nueva Reserva
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-error">
+    <strong>Error:</strong> {{ error }}
+    <button class="alert-close" (click)="error = null">✕</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading && reservas.length === 0" class="loading">
+    Cargando información de reservas...
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading || reservas.length > 0" class="table-container">
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th>Cancha</th>
+          <th>Fecha Inicio</th>
+          <th>Fecha Fin</th>
+          <th>Estado</th>
+          <th>Total a Pagar</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let reserva of reservas">
+          <td>{{ reserva.idReserva }}</td>
+          <td>{{ getNombreCliente(reserva.clienteId) }}</td>
+          <td>{{ getNombreCancha(reserva.canchaId) }}</td>
+
+          <td>{{ reserva.inicio | date: 'short' }}</td>
+          <td>{{ reserva.fin | date: 'short' }}</td>
+          <td>
+            <span class="badge" [ngClass]="getEstadoBadgeClass(reserva.estado)">
+              {{ reserva.estado }}
+            </span>
+          </td>
+          <td>
+            $ {{ reserva.totalPagar | number:'1.2-2' }}
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn-icon btn-edit" title="Editar reserva" (click)="abrirModalEditar(reserva)">
+                Editar
+              </button>
+
+              <button class="btn-icon btn-delete" title="Eliminar reserva" (click)="eliminar(reserva.idReserva)">
+                Eliminar
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="reservas.length === 0" class="empty-state">
+      No existen reservas registradas actualmente.
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>{{ isEditMode ? 'Editar Reserva' : 'Registrar Nueva Reserva' }}</h2>
+      <button class="modal-close" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <form class="modal-body" (ngSubmit)="guardar()">
+
+      <!-- Datos principales -->
+      <h3 class="section-title">Información General</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cancha *</label>
+          <select [(ngModel)]="form.canchaId" name="canchaId" required (change)="onCanchaChange()">
+            <option value="0" disabled>Seleccione una cancha</option>
+            <option *ngFor="let c of canchas" [value]="c.idCancha">
+              {{ c.nombre }}
+            </option>
+          </select>
+        </div>
+
+      </div>
+      <input type="hidden" [(ngModel)]="form.tarifaId">
+
+      <!-- Fechas -->
+      <h3 class="section-title">Horario de Reserva</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha y hora de inicio *</label>
+          <input type="datetime-local" [(ngModel)]="form.inicio" name="inicio" required (change)="calcularTotal()">
+        </div>
+
+        <div class="form-group">
+          <label>Fecha y hora de fin *</label>
+          <input type="datetime-local" [(ngModel)]="form.fin" name="fin" required (change)="calcularTotal()">
+        </div>
+      </div>
+
+      <!-- Opciones -->
+      <div class="form-group checkbox">
+        <label>
+          <input type="checkbox" [(ngModel)]="form.incluirEntrenador" name="incluirEntrenador">
+          Incluir entrenador en la reserva
+        </label>
+      </div>
+
+      <!-- Estado y pago -->
+      <h3 class="section-title">Estado y Pago</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estado de la reserva *</label>
+          <select [(ngModel)]="form.estado" name="estado" required>
+            <option value="PENDIENTE">Pendiente</option>
+            <option value="CONFIRMADA">Confirmada</option>
+            <option value="CANCELADA">Cancelada</option>
+            <option value="COMPLETADA">Completada</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Total a pagar *</label>
+<input
+  type="number"
+  class="form-control bg-light fw-bold"
+  [(ngModel)]="form.totalPagar"
+  readonly
+/>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Guardando...' : 'Guardar Reserva' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

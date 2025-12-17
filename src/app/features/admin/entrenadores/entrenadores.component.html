@@ -1,0 +1,201 @@
+<div class="entrenadores-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">👨‍🏫 Gestión de Entrenadores</h1>
+      <p class="page-subtitle">Administra los entrenadores registrados en el sistema</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalNuevo()" [disabled]="loading">
+      ➕ Nuevo Entrenador
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="error" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error }}</span>
+    <button class="alert-close" (click)="error = null">✕</button>
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ success }}</span>
+    <button class="alert-close" (click)="success = null">✕</button>
+  </div>
+
+  <!-- Search and Filter -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="🔍 Buscar por nombre, especialidad o email..."
+      [(ngModel)]="searchTerm"
+    />
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredEntrenadores.length === 0" class="empty-state">
+    <p class="empty-icon">📭</p>
+    <h3>No hay entrenadores</h3>
+    <p>Comienza creando tu primer entrenador</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading && filteredEntrenadores.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Especialidad</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entrenador of filteredEntrenadores" class="table-row">
+          <td class="cell-id">{{ entrenador.idEntrenador }}</td>
+          <td class="cell-name">{{ entrenador.nombre }}</td>
+          <td>{{ entrenador.apellido }}</td>
+          <td class="cell-specialty">
+            <span class="badge">{{ entrenador.especialidad }}</span>
+          </td>
+          <td class="cell-email">{{ entrenador.email }}</td>
+          <td>{{ entrenador.telefono }}</td>
+          <td class="cell-actions">
+            <button
+              class="btn-action btn-edit"
+              (click)="abrirModalEditar(entrenador)"
+              title="Editar"
+              [disabled]="loading"
+            >
+              ✏️
+            </button>
+            <button
+              class="btn-action btn-delete"
+              (click)="eliminar(entrenador.idEntrenador, entrenador.nombre)"
+              title="Eliminar"
+              [disabled]="loading"
+            >
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? '✏️ Editar Entrenador' : '➕ Nuevo Entrenador' }}</h2>
+        <button class="btn-close" (click)="cerrarModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ error }}</span>
+        </div>
+
+        <form (ngSubmit)="guardar()" class="form-grid">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nombre"
+              name="nombre"
+              placeholder="Juan"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Apellido *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.apellido"
+              name="apellido"
+              placeholder="Pérez"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Especialidad *</label>
+            <select [(ngModel)]="form.especialidad" name="especialidad" class="form-input">
+              <option value="" disabled>Selecciona una especialidad</option>
+              <option *ngFor="let esp of especialidades" [value]="esp">
+                {{ esp }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Email *</label>
+            <input
+              type="email"
+              [(ngModel)]="form.email"
+              name="email"
+              placeholder="juan@ejemplo.com"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Teléfono *</label>
+            <input
+              type="tel"
+              [(ngModel)]="form.telefono"
+              name="telefono"
+              placeholder="+57 300 123 4567"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label>{{ isEditMode ? 'Nueva Contraseña (opcional)' : 'Contraseña *' }}</label>
+            <div class="password-input-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="form.password"
+                name="password"
+                [placeholder]="isEditMode ? 'Dejar vacío para no cambiar' : 'Mínimo 6 caracteres'"
+                class="form-input"
+              />
+              <button
+                type="button"
+                class="btn-toggle-password"
+                (click)="togglePassword()"
+              >
+                {{ showPassword ? '👁️‍🗨️' : '👁️' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button
+          class="btn-primary"
+          (click)="guardar()"
+          [disabled]="loading"
+        >
+          {{ isEditMode ? '💾 Actualizar' : '➕ Crear' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

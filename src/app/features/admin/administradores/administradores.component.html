@@ -1,0 +1,189 @@
+<div class="administradores-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">👨‍💼 Gestión de Administradores</h1>
+      <p class="page-subtitle">Administra los usuarios administradores del sistema</p>
+    </div>
+    <button class="btn-primary" (click)="abrirModalNuevo()" [disabled]="loading">
+      ➕ Nuevo Administrador
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div *ngIf="error" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error }}</span>
+    <button class="alert-close" (click)="error = null">✕</button>
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ success }}</span>
+    <button class="alert-close" (click)="success = null">✕</button>
+  </div>
+
+  <!-- Search and Filter -->
+  <div class="search-bar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="🔍 Buscar por nombre, usuario..."
+      [(ngModel)]="searchTerm"
+    />
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredAdministradores.length === 0" class="empty-state">
+    <p class="empty-icon">📭</p>
+    <h3>No hay administradores</h3>
+    <p>Comienza creando tu primer administrador</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading && filteredAdministradores.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let admin of filteredAdministradores" class="table-row">
+          <td class="cell-id">{{ admin.idAdministrador }}</td>
+          <td class="cell-name">{{ admin.nombre }}</td>
+          <td>{{ admin.apellido }}</td>
+          <td class="cell-user">
+            <span class="user-badge">{{ admin.usuario }}</span>
+          </td>
+          <td class="cell-role">
+            <span class="role-badge">{{ admin.rol }}</span>
+          </td>
+          <td class="cell-actions">
+            <button
+              class="btn-action btn-edit"
+              (click)="abrirModalEditar(admin)"
+              title="Editar"
+              [disabled]="loading"
+            >
+              ✏️
+            </button>
+            <button
+              class="btn-action btn-delete"
+              (click)="eliminar(admin.idAdministrador, admin.nombre)"
+              title="Eliminar"
+              [disabled]="loading"
+            >
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditMode ? '✏️ Editar Administrador' : '➕ Nuevo Administrador' }}</h2>
+        <button class="btn-close" (click)="cerrarModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-error">
+          <span class="alert-icon">⚠️</span>
+          <span>{{ error }}</span>
+        </div>
+
+        <form (ngSubmit)="guardar()" class="form-grid">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nombre"
+              name="nombre"
+              placeholder="Juan"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Apellido *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.apellido"
+              name="apellido"
+              placeholder="Pérez"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Usuario *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.usuario"
+              name="usuario"
+              placeholder="juan_admin"
+              class="form-input"
+              [readonly]="isEditMode"
+            />
+            <small class="form-hint">4-20 caracteres, solo letras, números y guiones bajos</small>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Rol *</label>
+            <select [(ngModel)]="form.rol" name="rol" class="form-input">
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label>{{ isEditMode ? 'Nueva Contraseña (opcional)' : 'Contraseña *' }}</label>
+            <div class="password-input-wrapper">
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                [(ngModel)]="form.password"
+                name="password"
+                [placeholder]="isEditMode ? 'Dejar vacío para no cambiar' : 'Mínimo 6 caracteres'"
+                class="form-input"
+              />
+              <button
+                type="button"
+                class="btn-toggle-password"
+                (click)="togglePassword()"
+              >
+                {{ showPassword ? '👁️‍🗨️' : '👁️' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cerrarModal()">
+          Cancelar
+        </button>
+        <button
+          class="btn-primary"
+          (click)="guardar()"
+          [disabled]="loading"
+        >
+          {{ isEditMode ? '💾 Actualizar' : '➕ Crear' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

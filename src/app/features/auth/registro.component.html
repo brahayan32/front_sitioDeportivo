@@ -1,0 +1,244 @@
+<div class="registro-container">
+  <div class="registro-wrapper">
+    <!-- Header -->
+    <div class="registro-header">
+      <h1>🏋️ Centro Deportivo</h1>
+      <h2>Crear Cuenta</h2>
+      <p class="subtitle">Únete a nuestra comunidad de deportistas</p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-danger">
+      <span class="icon">⚠️</span>
+      <span>{{ error }}</span>
+      <button class="btn-close" (click)="error = null">×</button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="success" class="alert alert-success">
+      <span class="icon">✓</span>
+      <span>¡Cuenta creada exitosamente!</span>
+    </div>
+
+    <!-- Formulario -->
+    <form (ngSubmit)="registrar()" class="registro-form">
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre">
+          <span class="label-text">Nombre Completo</span>
+          <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="nombre"
+          [(ngModel)]="form.nombre"
+          name="nombre"
+          class="form-control"
+          placeholder="Juan Pérez"
+          required
+          [disabled]="loading"
+        />
+      </div>
+
+      <!-- Usuario -->
+      <div class="form-group">
+        <label for="usuario">
+          <span class="label-text">Usuario</span>
+          <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="usuario"
+          [(ngModel)]="form.usuario"
+          name="usuario"
+          class="form-control"
+          placeholder="juanperez123"
+          required
+          [disabled]="loading"
+        />
+        <small class="hint">Mínimo 4 caracteres, sin espacios</small>
+      </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">
+          <span class="label-text">Email</span>
+          <span class="required">*</span>
+        </label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="form.email"
+          name="email"
+          class="form-control"
+          placeholder="juan@example.com"
+          required
+          [disabled]="loading"
+        />
+      </div>
+
+      <!-- Rol -->
+      <div class="form-group">
+        <label for="rol">
+          <span class="label-text">¿Qué eres?</span>
+          <span class="required">*</span>
+        </label>
+        <select
+          id="rol"
+          [(ngModel)]="form.rol"
+          name="rol"
+          class="form-control"
+          required
+          [disabled]="loading"
+        >
+          <option *ngFor="let rol of roles" value="{{ rol.value }}">
+            {{ rol.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Documento -->
+      <div class="form-group">
+        <label for="documento">
+          <span class="label-text">Documento (Cédula/Pasaporte)</span>
+          <span class="required">*</span>
+        </label>
+        <input
+          type="text"
+          id="documento"
+          [(ngModel)]="form.documento"
+          name="documento"
+          class="form-control"
+          placeholder="12345678"
+          required
+          [disabled]="loading"
+        />
+      </div>
+
+      <!-- Teléfono -->
+      <div class="form-group">
+        <label for="telefono">
+          <span class="label-text">Teléfono</span>
+          <span class="required">*</span>
+        </label>
+        <input
+          type="tel"
+          id="telefono"
+          [(ngModel)]="form.telefono"
+          name="telefono"
+          class="form-control"
+          placeholder="+57 300 1234567"
+          required
+          [disabled]="loading"
+        />
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password">
+          <span class="label-text">Contraseña</span>
+          <span class="required">*</span>
+        </label>
+        <div class="password-input">
+          <input
+            type="password"
+            id="password"
+            [(ngModel)]="form.password"
+            name="password"
+            class="form-control"
+            placeholder="Mínimo 6 caracteres"
+            required
+            [disabled]="loading"
+          />
+          <button
+            type="button"
+            class="btn-toggle-password"
+            (click)="togglePassword('password')"
+            [disabled]="loading"
+            title="Mostrar/Ocultar"
+          >
+            👁️
+          </button>
+        </div>
+        <small class="hint">Usa mayúsculas, números y caracteres especiales</small>
+      </div>
+
+      <!-- Confirmar Contraseña -->
+      <div class="form-group">
+        <label for="confirmPassword">
+          <span class="label-text">Confirmar Contraseña</span>
+          <span class="required">*</span>
+        </label>
+        <div class="password-input">
+          <input
+            type="password"
+            id="confirmPassword"
+            [(ngModel)]="form.confirmPassword"
+            name="confirmPassword"
+            class="form-control"
+            placeholder="Repite tu contraseña"
+            required
+            [disabled]="loading"
+          />
+          <button
+            type="button"
+            class="btn-toggle-password"
+            (click)="togglePassword('confirmPassword')"
+            [disabled]="loading"
+            title="Mostrar/Ocultar"
+          >
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <!-- Términos y Condiciones -->
+      <div class="form-group checkbox">
+        <input
+          type="checkbox"
+          id="terminos"
+          required
+          [disabled]="loading"
+        />
+        <label for="terminos">
+          Acepto los <a href="#" class="link">términos y condiciones</a>
+        </label>
+      </div>
+
+      <!-- Botón Submit -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">Crear Cuenta</span>
+        <span *ngIf="loading">
+          <span class="spinner"></span> Creando cuenta...
+        </span>
+      </button>
+    </form>
+
+    <!-- Link a Login -->
+    <div class="login-link">
+      ¿Ya tienes cuenta?
+      <a routerLink="/login" class="link">Inicia sesión aquí</a>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <h4>📋 Información</h4>
+      <ul>
+        <li>Tu cuenta se creará en minutos</li>
+        <li>Podrás cambiar tu rol después</li>
+        <li>Todos los datos están protegidos</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Decoración Background -->
+  <div class="background-decoration">
+    <div class="circle circle-1"></div>
+    <div class="circle circle-2"></div>
+    <div class="circle circle-3"></div>
+  </div>
+</div>

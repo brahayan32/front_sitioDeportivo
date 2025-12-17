@@ -1,0 +1,209 @@
+<div class="reportes-container">
+  <div class="header-section">
+    <h2>Reportes del Sistema</h2>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="showFilters = !showFilters">
+        🔍 Filtros
+      </button>
+      <button class="btn-primary" (click)="abrirModalNuevo()" [disabled]="loading">
+        + Nuevo Reporte
+      </button>
+    </div>
+  </div>
+
+  <!-- Sección de Filtros -->
+  <div *ngIf="showFilters" class="filters-section">
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label for="tipoReporte">Tipo de Reporte</label>
+        <select
+          id="tipoReporte"
+          [(ngModel)]="filtros.tipoReporte"
+          class="form-control"
+        >
+          <option value="">Todos</option>
+          <option *ngFor="let tipo of tiposReporte" value="{{ tipo }}">
+            {{ tipo }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="fechaInicio">Fecha Inicio</label>
+        <input
+          type="date"
+          id="fechaInicio"
+          [(ngModel)]="filtros.fechaInicio"
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="fechaFin">Fecha Fin</label>
+        <input
+          type="date"
+          id="fechaFin"
+          [(ngModel)]="filtros.fechaFin"
+          class="form-control"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="idCancha">ID Cancha</label>
+        <input
+          type="number"
+          id="idCancha"
+          [(ngModel)]="filtros.idCancha"
+          class="form-control"
+          placeholder="Opcional"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="idCliente">ID Cliente</label>
+        <input
+          type="number"
+          id="idCliente"
+          [(ngModel)]="filtros.idCliente"
+          class="form-control"
+          placeholder="Opcional"
+        />
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn-primary" (click)="aplicarFiltros()">
+          Aplicar Filtros
+        </button>
+        <button class="btn-secondary" (click)="limpiarFiltros()">
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+    <button class="btn-close" (click)="error = null">×</button>
+  </div>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    Cargando reportes...
+  </div>
+
+  <div *ngIf="!loading && reportes.length === 0" class="empty-state">
+    <p>No hay reportes registrados</p>
+  </div>
+
+  <div *ngIf="!loading && reportes.length > 0" class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Admin</th>
+          <th>Reserva</th>
+          <th>Fecha Generado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let reporte of reportes">
+          <td>{{ reporte.idReporte }}</td>
+          <td>
+            <span [ngClass]="'badge ' + getTipoReporteBadgeClass(reporte.tipoReporte)">
+              {{ reporte.tipoReporte }}
+            </span>
+          </td>
+          <td class="descripcion">{{ reporte.descripcion || '-' }}</td>
+          <td>{{ reporte.administradorId || '-' }}</td>
+          <td>{{ reporte.reservaId || '-' }}</td>
+          <td>{{ reporte.fechaGenerado | date: 'short' }}</td>
+          <td class="acciones">
+            <button class="btn-download" (click)="descargarReporte(reporte)" title="Descargar">
+              ⬇
+            </button>
+            <button class="btn-delete" (click)="eliminar(reporte.idReporte)" title="Eliminar">
+              🗑
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Editar' : 'Nuevo' }} Reporte</h3>
+        <button class="btn-close" (click)="cerrarModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="guardar()">
+          <div class="form-group">
+            <label for="tipoReporte">Tipo de Reporte *</label>
+            <select
+              id="tipoReporte"
+              [(ngModel)]="form.tipoReporte"
+              name="tipoReporte"
+              class="form-control"
+              required
+            >
+              <option value="">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposReporte" value="{{ tipo }}">
+                {{ tipo }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="descripcion">Descripción</label>
+            <textarea
+              id="descripcion"
+              [(ngModel)]="form.descripcion"
+              name="descripcion"
+              class="form-control"
+              rows="4"
+              placeholder="Detalles del reporte..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="administradorId">ID Administrador</label>
+            <input
+              type="number"
+              id="administradorId"
+              [(ngModel)]="form.administradorId"
+              name="administradorId"
+              class="form-control"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="reservaId">ID Reserva</label>
+            <input
+              type="number"
+              id="reservaId"
+              [(ngModel)]="form.reservaId"
+              name="reservaId"
+              class="form-control"
+              placeholder="Opcional"
+            />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" (click)="cerrarModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn-primary" [disabled]="loading">
+              {{ loading ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
