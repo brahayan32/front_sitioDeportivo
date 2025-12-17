@@ -65,6 +65,15 @@
                name="nombre"
                required />
       </div>
+      <div class="form-group">
+  <label>Tarifa *</label>
+  <select [(ngModel)]="form.idTarifa" name="idTarifa">
+    <option *ngFor="let t of tarifas" [value]="t.idTarifa">
+      {{ t.tipoServicio }} - ${{ t.precioHora }}/hora
+    </option>
+  </select>
+</div>
+
 
       <div class="form-group">
         <label>Tipo *</label>

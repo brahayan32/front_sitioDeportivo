@@ -64,4 +64,11 @@ export class TarifaService {
   findVigentes(): Observable<TarifaResponse[]> {
     return this.http.get<TarifaResponse[]>(`${this.apiUrl}/vigentes`);
   }
+
+  getTarifaPorCancha(idCancha: number): Observable<TarifaResponse> {
+    return this.http.get<TarifaResponse>(
+      `${this.apiUrl}/por-cancha/${idCancha}`
+    );
+  }
+
 }

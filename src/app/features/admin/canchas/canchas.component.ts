@@ -8,6 +8,7 @@ import {
   TipoCancha,
   EstadoCancha
 } from '../../../core/cancha.service';
+import { TarifaService, TarifaResponse } from '../../../core/tarifa.service';
 
 @Component({
   selector: 'app-canchas',
@@ -17,8 +18,10 @@ import {
   styleUrls: ['./canchas.component.scss']
 })
 export class CanchasComponent implements OnInit {
-
   private canchaService = inject(CanchaService);
+  private tarifaService = inject(TarifaService);
+
+  tarifas: TarifaResponse[] = [];
 
   canchas: CanchaResponse[] = [];
   loading = false;
@@ -35,7 +38,17 @@ export class CanchasComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarCanchas();
+    this.cargarTarifas();
   }
+
+  cargarTarifas(): void {
+  this.tarifaService.findVigentes().subscribe({
+    next: (data: TarifaResponse[]) => {
+      this.tarifas = data;
+    }
+  });
+}
+
 
   cargarCanchas(): void {
     this.loading = true;

@@ -19,6 +19,7 @@ export interface CanchaRequest {
   tipo: TipoCancha;
   estado: EstadoCancha;
   descripcion: string;
+  idTarifa?: number;
 }
 
 @Injectable({ providedIn: 'root' })

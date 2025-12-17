@@ -19,7 +19,7 @@ import { AuthService } from '../../core/auth.service';
         <div class="login-card">
           <!-- Logo/Header -->
           <div class="login-header">
-            <h1>🏟️ CITIO DEPORTIVO</h1>
+            <h1>🏟️ CENTRO DEPORTIVO AVAMAS</h1>
             <p class="subtitle">Sistema de Gestión</p>
           </div>
 

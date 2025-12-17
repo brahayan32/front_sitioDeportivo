@@ -16,11 +16,10 @@ import { AuthService } from '../../../core/auth.service';
 })
 
 export class ReservasComponent implements OnInit {
-  clientes: any[] = [];
   canchas: any[] = [];
-  tarifas: TarifaResponse[] = [];
-
-
+  precioPorHora?: number;
+  tarifaId?: number;
+  
   reservas: ReservaResponse[] = [];
   loading = false;
   error: string | null = null;
@@ -63,70 +62,75 @@ export class ReservasComponent implements OnInit {
       this.form.totalPagar = 0;
       return;
     }
+    if (!this.precioPorHora) {
+      this.form.totalPagar = 0;
+      return;
+    }
 
-    const tarifa = this.tarifas.find(t => t.idTarifa === this.form.tarifaId);
-    this.form.totalPagar = tarifa ? horas * tarifa.precioHora : 0;
+    this.form.totalPagar = horas * this.precioPorHora;
+
   }
 
 
 
   ngOnInit(): void {
-  const idCliente = this.authService.getIdCliente();
+    const idCliente = this.authService.getIdCliente();
 
-  if (!idCliente) {
-    this.error = 'No se pudo identificar el cliente autenticado';
-    return;
+    if (!idCliente) {
+      this.error = 'No se pudo identificar el cliente autenticado';
+      return;
+    }
+
+    this.form.clienteId = idCliente;
+
+    this.cargarCanchas();
+    this.cargarReservas();
   }
+  
+  cargarReservas(): void {
+    this.loading = true;
+    this.error = null;
 
-  this.form.clienteId = idCliente;
+    const idCliente = this.authService.getIdCliente();
 
-  this.cargarCanchas();
-  this.cargarTarifas();
-  this.cargarReservas();
-}
-
-  cargarTarifas(): void {
-    this.tarifaService.findAll().subscribe({
-      next: (data) => this.tarifas = data.filter(t => t.vigente),
-      error: (err) => console.error('Error cargando tarifas', err)
+    this.reservaService.findAll().subscribe({
+      next: (data) => {
+        this.reservas = data.filter(
+          r => r.clienteId === idCliente
+        );
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Error al cargar tus reservas';
+        this.loading = false;
+        console.error(err);
+      }
     });
   }
 
 
-  cargarReservas(): void {
-  this.loading = true;
-  this.error = null;
-
-  const idCliente = this.authService.getIdCliente();
-
-  this.reservaService.findAll().subscribe({
-    next: (data) => {
-      this.reservas = data.filter(
-        r => r.clienteId === idCliente
-      );
-      this.loading = false;
-    },
-    error: (err) => {
-      this.error = 'Error al cargar tus reservas';
-      this.loading = false;
-      console.error(err);
-    }
-  });
-}
-
-
   onCanchaChange(): void {
-    const cancha = this.canchas.find(c => c.idCancha === this.form.canchaId);
-
-    if (!cancha || !cancha.tarifaId) {
+    if (!this.form.canchaId) {
       this.form.tarifaId = undefined;
+      this.precioPorHora = undefined;
       this.form.totalPagar = 0;
       return;
     }
 
-    this.form.tarifaId = cancha.tarifaId;
-    this.calcularTotal();
+    this.tarifaService.getTarifaPorCancha(this.form.canchaId).subscribe({
+      next: (tarifa) => {
+        this.form.tarifaId = tarifa.idTarifa;
+        this.precioPorHora = tarifa.precioHora;
+        this.calcularTotal();
+      },
+      error: () => {
+        this.form.tarifaId = undefined;
+        this.precioPorHora = undefined;
+        this.form.totalPagar = 0;
+      }
+    });
   }
+
 
   cargarCanchas(): void {
     this.canchaService.findAll().subscribe({
@@ -163,10 +167,6 @@ export class ReservasComponent implements OnInit {
   cerrarModal(): void {
     this.showModal = false;
     this.resetForm();
-  }
-  getNombreCliente(id: number): string {
-    const cliente = this.clientes.find(c => c.idCliente === id);
-    return cliente ? cliente.nombre : 'Cliente';
   }
 
   getNombreCancha(id: number): string {
@@ -283,8 +283,6 @@ export class ReservasComponent implements OnInit {
         : this.form.fin
     };
   }
-
-
   getEstadoBadgeClass(estado: string): string {
     switch (estado) {
       case 'PENDIENTE':
@@ -296,7 +294,10 @@ export class ReservasComponent implements OnInit {
       case 'COMPLETADA':
         return 'badge-info';
       default:
-        return 'badge-default';
+        return 'badge-secondary';
     }
   }
+
+
+
 }
